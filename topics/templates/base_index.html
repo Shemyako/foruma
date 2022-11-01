@@ -37,6 +37,12 @@
             {% endblock %}
         </div>
         <div >
+            {% if topic %}
+            <!-- <ul> -->
+                <a href="{% url 'home' %}">Home</a>
+                {% include "tree.html" %}
+            <!-- </ul> -->
+            {% endif %}
             {% block content %}{% endblock %}
         </div>
 

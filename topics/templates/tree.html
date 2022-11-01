@@ -1,0 +1,8 @@
+{% if topic.created_in %}
+        {% with "tree.html" as filename %}
+        {% with topic.created_in as topic %}
+            {% include filename %}
+        {% endwith %}
+        {% endwith %}
+    {% endif %}
+    -><a href="{{topic.get_absolute_url}}">{{ topic.name }}</a>

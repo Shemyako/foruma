@@ -50,7 +50,7 @@ def init(request):
     return render(
         request,
         'index.html',
-        context = {'topics': topics, 'user':user},
+        context = {'topics': topics, 'user':user, 'topic':None},
     )
 
 
@@ -65,7 +65,7 @@ def topic(request, pk):
         return render(
             request,
             'index.html',
-            context = {'topics': topics, "user":user},
+            context = {'topics': topics, "user":user, 'topic':topic},
         )
 
 
@@ -80,6 +80,7 @@ def topic(request, pk):
     outer = request.GET.get("outer",0)
     messages = topic.messages_set.all()#[outer:outer+10]
     form = SendingMessageForm()
+    print("ALL GOOD", topic)
     return render(
         request,
         'topic.html',
