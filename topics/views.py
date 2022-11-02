@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from .models import Users, Topics, Messages
-from .forms import SendingMessageForm, AuthForm
+from .forms import SendingMessageForm, AuthForm, SignUpForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 import uuid
+from django.core.exceptions import ValidationError
 from .auth import check_password, making_hash
 
 def get_client_ip(request):
@@ -91,30 +92,41 @@ def topic(request, pk):
 
 def login(request):
     request, user = auth(request)
+    if user:
+        return HttpResponseRedirect(reverse('lk') )
+    
+    form = AuthForm()
 
     if request.method == "POST":
-        form = AuthForm(request.POST)
-        if form.is_valid():
-            user = Users.objects.filter(name=form.cleaned_data['login'])
-            if user and check_password(form.cleaned_data['password'], user[0].password):
-                user = user[0]
-                user.ip = get_client_ip(request)
-                user.browser = request.META.get("HTTP_USER_AGENT", "")
-                user.token = uuid.uuid4()
-                user.save()
-                request.session['token'] = str(user.token)
-                return HttpResponseRedirect(reverse('home') )
-        return HttpResponseRedirect(reverse('login') )
+        if "type" in request.POST:
 
-    if not user:
-        form = AuthForm()
-        return render(
-            request,
-            'sign_in.html',
-            context = {"form":form, "user":user},
-        )
+            if request.POST['type'] == 'LogIn': 
+                form = AuthForm(request.POST)
+            
+            else:
+                form = SignUpForm(request.POST)
+        
+
+            if form.is_valid():
+                if request.POST['type'] == 'SignIn':
+                    user = Users.objects.create(name=form.cleaned_data['login'], password=making_hash(cleaned_data['password']))
+
+                user = Users.objects.filter(name=form.cleaned_data['login'])
+                if user:
+                    user = user[0]
+                    user.ip = get_client_ip(request)
+                    user.browser = request.META.get("HTTP_USER_AGENT", "")
+                    user.token = uuid.uuid4()
+                    user.save()
+                    request.session['token'] = str(user.token)
+                    return HttpResponseRedirect(reverse('home') )
+
+    return render(
+        request,
+        'sign_in.html',
+        context = {"form":form, "user":user},
+    )
     
-    return HttpResponseRedirect(reverse('lk') )
 
 
 def lk(request):
